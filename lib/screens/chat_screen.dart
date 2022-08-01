@@ -1,7 +1,11 @@
+
+
+
 import 'package:flutter/material.dart';
 import 'package:flash_chat_app/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat';
@@ -31,21 +35,20 @@ class _ChatScreenState extends State<ChatScreen> {
       print(e);
     }
   }
+
   // void getMesseges() async {
   //   final messages = await _fireStore.collection('message').get();
   //    for( var message in messages.docs){
   //     print(message.data());
   //    }
   // }
-void getMessegeSnapShots() async {
- await for( var snapshot in _fireStore.collection('message').snapshots()){
-  for(var message in snapshot.docs){
-    print(message.data());
+  void getMessegeSnapShots() async {
+    await for (var snapshot in _fireStore.collection('message').snapshots()) {
+      for (var message in snapshot.docs) {
+        print(message.data());
+      }
+    }
   }
- }
-}
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +57,6 @@ void getMessegeSnapShots() async {
         leading: null,
         actions: <Widget>[
           IconButton(
-            
               icon: const Icon(Icons.close),
               onPressed: () {
                 getMessegeSnapShots();
@@ -67,9 +69,31 @@ void getMessegeSnapShots() async {
       ),
       body: SafeArea(
         child: Column(
+          
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            StreamBuilder(
+                stream: _fireStore.collection('message').snapshots(),
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.hasData) {
+                    final messages = snapshot.data.docs;
+                    List<Text> messageWidgets = [];
+                    for (var message in messages) {
+                      final messageText = message['text'];
+                      final messageSender = message['sender'];
+                      final messageWidget =
+                          Text('$messageText from $messageSender');
+                      messageWidgets.add(messageWidget);
+                    }
+                    return Column(
+                      
+                      children: messageWidgets,
+                    );
+                  } else {
+                    return Text('No Data Found');
+                  }
+                }),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -78,7 +102,7 @@ void getMessegeSnapShots() async {
                   Expanded(
                     child: TextField(
                       onChanged: (value) {
-                       messageText = value;
+                        messageText = value;
                       },
                       decoration: kMessageTextFieldDecoration,
                       style: const TextStyle(color: Colors.black),
@@ -86,10 +110,10 @@ void getMessegeSnapShots() async {
                   ),
                   TextButton(
                     onPressed: () {
-                     _fireStore.collection('message').add({
-                      'text': messageText,
-                      'sender': loggedInUser.email,
-                     });
+                      _fireStore.collection('message').add({
+                        'text': messageText,
+                        'sender': loggedInUser.email,
+                      });
                     },
                     child: const Text(
                       'Send',
