@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flash_chat_app/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -30,13 +29,11 @@ class _ChatScreenState extends State<ChatScreen> {
       final user = await _auth.currentUser;
       if (user != null) {
         loggedInUser = user;
-        print(loggedInUser.email);
       }
     } catch (e) {
       print(e);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +56,7 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            BubbleBuilder(),
+            const BubbleBuilder(),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -134,7 +131,10 @@ class BubbleBuilder extends StatelessWidget {
               ),
             );
           } else {
-            return Text('No Data Found');
+            return Text(
+              'No Data Found at The Moment, But you Can Add yours ',
+              style: TextStyle(fontSize: 30.0),
+            );
           }
         });
   }
@@ -175,15 +175,16 @@ class MessageBubble extends StatelessWidget {
             elevation: 5.0,
             color: isMe ? Colors.lightBlueAccent : Colors.white,
             child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
-                child: Text(
-                  ' $text',
-                  style: TextStyle(
-                    color: isMe ? Colors.white : Colors.black54,
-                    fontSize: 15.0,
-                  ),
-                ),),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
+              child: Text(
+                ' $text',
+                style: TextStyle(
+                  color: isMe ? Colors.white : Colors.black54,
+                  fontSize: 15.0,
+                ),
+              ),
+            ),
           ),
         ],
       ),
