@@ -1,16 +1,5 @@
-# flash_chat_app
+# FLASH CHAT app
 
-A new Flutter project.
+A new Flutter project,  that User the Power of Firebase to power a live Chat app with a permanaent DB and Time Stamped conversation between multiple users. Also contain an Email and Password authentication features.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+##  Demo
