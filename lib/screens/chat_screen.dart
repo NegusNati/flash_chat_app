@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flash_chat_app/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 final _fireStore = FirebaseFirestore.instance;
+late User loggedInUser;
 
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat';
@@ -16,7 +18,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final textController = TextEditingController();
   final _auth = FirebaseAuth.instance;
   late String messageText;
-  late User loggedInUser;
+
   @override
   void initState() {
     super.initState();
@@ -35,19 +37,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // void getMesseges() async {
-  //   final messages = await _fireStore.collection('message').get();
-  //    for( var message in messages.docs){
-  //     print(message.data());
-  //    }
-  // }
-  void getMessegeSnapShots() async {
-    await for (var snapshot in _fireStore.collection('message').snapshots()) {
-      for (var message in snapshot.docs) {
-        print(message.data());
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,9 +47,8 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
               icon: const Icon(Icons.close),
               onPressed: () {
-                getMessegeSnapShots();
-                // _auth.signOut();
-                // Navigator.pop(context);
+                _auth.signOut();
+                Navigator.pop(context);
               }),
         ],
         title: const Text('⚡️Chat'),
@@ -93,6 +81,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       _fireStore.collection('message').add({
                         'text': messageText,
                         'sender': loggedInUser.email,
+                        'date': DateTime.now().toIso8601String().toString(),
                       });
                     },
                     child: const Text(
@@ -116,7 +105,7 @@ class BubbleBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-        stream: _fireStore.collection('message').snapshots(),
+        stream: _fireStore.collection('message').orderBy('date').snapshots(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.hasData) {
             final messages = snapshot.data.docs;
@@ -124,13 +113,21 @@ class BubbleBuilder extends StatelessWidget {
             for (var message in messages) {
               final messageText = message['text'];
               final messageSender = message['sender'];
-              final messageBubbleWidget =
-                  MessageBubble(title: messageSender, text: messageText);
+
+              final currentUser = loggedInUser.email;
+
+              if (currentUser == messageSender) {}
+              final messageBubbleWidget = MessageBubble(
+                title: messageSender,
+                text: messageText,
+                isMe: currentUser == messageSender,
+              );
 
               messageBubbles.add(messageBubbleWidget);
             }
             return Expanded(
               child: ListView(
+                reverse: false,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
                 children: messageBubbles,
@@ -144,9 +141,11 @@ class BubbleBuilder extends StatelessWidget {
 }
 
 class MessageBubble extends StatelessWidget {
-  MessageBubble({required this.title, required this.text});
+  MessageBubble({required this.title, required this.text, required this.isMe});
   final String title;
   final String text;
+  final bool isMe;
+  Color colour = Colors.white;
 
   @override
   Widget build(BuildContext context) {
@@ -154,25 +153,37 @@ class MessageBubble extends StatelessWidget {
       padding: const EdgeInsets.all(10.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: TextStyle(fontSize: 12.0, color: Colors.black38),
+            style: const TextStyle(fontSize: 12.0, color: Colors.black38),
           ),
           Material(
-            borderRadius: BorderRadius.circular(20.0),
+            borderRadius: isMe
+                ? const BorderRadius.only(
+                    topLeft: Radius.circular(30.0),
+                    bottomLeft: Radius.circular(30.0),
+                    bottomRight: Radius.circular(30.0),
+                  )
+                : const BorderRadius.only(
+                    topRight: Radius.circular(30.0),
+                    bottomLeft: Radius.circular(30.0),
+                    bottomRight: Radius.circular(30.0),
+                  ),
             elevation: 5.0,
-            color: Colors.lightBlueAccent,
+            color: isMe ? Colors.lightBlueAccent : Colors.white,
             child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
                 child: Text(
                   ' $text',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: isMe ? Colors.white : Colors.black54,
                     fontSize: 15.0,
                   ),
-                )),
+                ),),
           ),
         ],
       ),
